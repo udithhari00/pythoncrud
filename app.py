@@ -75,7 +75,7 @@ class User(Resource):
 
         data=marshal(user,studentFields)
         return response_wrapper(True,"Success",data),200
-        return user
+
 
 api.add_resource(Users,'/student/')
 api.add_resource(User,'/student/<int:id>/')
