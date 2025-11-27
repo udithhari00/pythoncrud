@@ -1,6 +1,6 @@
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
-from flask_restful import Api,reqparse,Resource,fields,marshal_with,abort
+from flask_restful import Api, reqparse, Resource, fields, marshal_with, abort, marshal
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
@@ -18,7 +18,12 @@ class Student(db.Model):
         self.age = age
 
 def response_wrapper(success :bool, message :str , data=None):
-    return {'success': success, 'message': message, 'data': data}
+    return {
+        'success': success,
+        'message': message,
+        'data': data
+    }
+
 
 student_args = reqparse.RequestParser()
 student_args.add_argument('name',type=str,location='json',required=True,help='Name cannot be blank')
@@ -34,29 +39,32 @@ studentFields = {
 }
 
 class Users(Resource):
-    @marshal_with(studentFields)
+
     def get(self):
         users = Student.query.all()
-        return response_wrapper(success=True, message='Success', data=users)
+        data=marshal(users,studentFields)
+        return response_wrapper(True,"Success",data),200
 
-    @marshal_with(studentFields)
+
     def post(self):
         args = student_args.parse_args()
         user = Student(name=args['name'],age=args['age'])
         db.session.add(user)
         db.session.commit()
-        users = Student.query.all()
-        return users,201
+
+        data=marshal(user,studentFields)
+        return response_wrapper(True,"Student Created Successfully",data),201
 
 class User(Resource):
-    @marshal_with(studentFields)
+
     def get(self, id):
         user = Student.query.filter_by(id=id).first()
         if not(user):
             abort(404,message="Student does not exist")
-        return user
+        data=marshal(user,studentFields)
+        return response_wrapper(True,"Success",data),200
 
-    @marshal_with(studentFields)
+
     def put(self, id):
         args = option_args.parse_args()
         user = Student.query.filter_by(id=id).first()
@@ -64,6 +72,9 @@ class User(Resource):
             abort(404,message="Student does not exist")
         user.age = args['age']
         db.session.commit()
+
+        data=marshal(user,studentFields)
+        return response_wrapper(True,"Success",data),200
         return user
 
 api.add_resource(Users,'/student/')
