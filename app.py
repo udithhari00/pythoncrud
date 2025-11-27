@@ -1,6 +1,7 @@
 from flask import Flask, request
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api, reqparse, Resource, fields, marshal_with, abort, marshal
+from sqlalchemy.sql.functions import user
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
@@ -75,7 +76,15 @@ class User(Resource):
 
         data=marshal(user,studentFields)
         return response_wrapper(True,"Success",data),200
-        return user
+
+    def delete(self, id):
+        user = Student.query.filter_by(id=id).first()
+        if not(user):
+            abort(404,message="Student does not exist")
+        db.session.delete(user)
+        db.session.commit()
+
+        return response_wrapper(True,"Success",None),204
 
 api.add_resource(Users,'/student/')
 api.add_resource(User,'/student/<int:id>/')
