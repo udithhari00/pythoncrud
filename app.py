@@ -1,7 +1,6 @@
-from flask import Flask, request
+from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
-from flask_restful import Api, reqparse, Resource, fields, marshal_with, abort, marshal
-from sqlalchemy.sql.functions import user
+from flask_restful import Api, reqparse, Resource, fields, abort, marshal
 
 app = Flask(__name__)
 app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///db.sqlite3'
@@ -94,4 +93,6 @@ def hello_world():  # put application's code here
 
 
 if __name__ == '__main__':
+    with app.app_context():
+        db.create_all()
     app.run(debug=True)
